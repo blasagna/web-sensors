@@ -1,82 +1,94 @@
 'use strict'
 
 // todo:
+//  - get timestamps from Sensor interface too
+// - logs in scrolling text box
+// - button to clear logs
+// - replace UI logs with plot and data rate
+// - add gyroscope, orientation samples   
 // - add websocket client, send sensors to websocket server for signal processing
 
-function handlePermission(sensorName) {
+
+const availableSensorsList = document.getElementById("availableSensors");
+const logElement = document.getElementById("log");
+
+var accelerometerSensor;
+var gravitySensor;
+var linearAccelerationSensor;
+var ambientLightSensor;
+
+function log(msg) {
+    console.log(msg);
+    logElement.innerHTML += `${msg}<br>`;
+}
+
+function checkPermission(sensorName) {
     navigator.permissions.query({ name: sensorName }).then((result) => {
+        console.log(`${sensorName} permission: ${result.state}`);
         if (result.state === "denied") {
-            console.log(`Permission to use ${sensorName} sensor is denied`);
+            log(`Permission to use ${sensorName} sensor denied`);
             return;
         }
-        console.log(`${sensorName} permission: ${result.state}`);
-        // todo: log errors to html
+        const listElem = document.createElement("li");
+        listElem.appendChild(document.createTextNode(sensorName));
+        availableSensorsList.appendChild(listElem);
     });
 }
 
 function startSensors() {
-    // todo: populate html list
-    handlePermission('accelerometer');
-    handlePermission('gyroscope');
-    handlePermission('magnetometer');
-    handlePermission('ambient-light-sensor');
-
-    const accelerometerSensor = new Accelerometer({ frequency: 60 });
+    accelerometerSensor = new Accelerometer({ frequency: 60 });
     accelerometerSensor.addEventListener("error", (error) => {
-        console.log(`Accelerometer error: ${error.name}`);
+        log(`Accelerometer error: ${error.name}`);
     });
     accelerometerSensor.addEventListener("activate", () => {
-        console.log("Accelerometer ready to measure");
+        log("Accelerometer ready to measure");
     });
     accelerometerSensor.addEventListener("reading", () => {
-        console.log(`Acceleration along the X-axis ${accelerometerSensor.x}`);
-        console.log(`Acceleration along the Y-axis ${accelerometerSensor.y}`);
-        console.log(`Acceleration along the Z-axis ${accelerometerSensor.z}`);
+        log(`Acceleration along the Y-axis ${accelerometerSensor.y}`);
+        log(`Acceleration along the Z-axis ${accelerometerSensor.z}`);
+        log(`Acceleration along the X-axis ${accelerometerSensor.x}`);
     });
     accelerometerSensor.start();
 
-    let gravitySensor = new GravitySensor({ frequency: 60 });
+    gravitySensor = new GravitySensor({ frequency: 60 });
     gravitySensor.addEventListener("error", (error) => {
-        console.log(`Gravity error: ${error.name}`);
+        log(`Gravity error: ${error.name}`);
     });
     gravitySensor.addEventListener("activate", () => {
-        console.log("Gravity ready to measure");
+        log("Gravity ready to measure");
     });
     gravitySensor.addEventListener("reading", () => {
-        console.log(`Gravity along the X-axis ${gravitySensor.x}`);
-        console.log(`Gravity along the Y-axis ${gravitySensor.y}`);
-        console.log(`Gravity along the Z-axis ${gravitySensor.z}`);
+        log(`Gravity along the X-axis ${gravitySensor.x}`);
+        log(`Gravity along the Y-axis ${gravitySensor.y}`);
+        log(`Gravity along the Z-axis ${gravitySensor.z}`);
     });
     gravitySensor.start();
 
-    let linearAccelerationSensor = new LinearAccelerationSensor({ frequency: 60 });
+    linearAccelerationSensor = new LinearAccelerationSensor({ frequency: 60 });
     linearAccelerationSensor.addEventListener("error", (error) => {
-        console.log(`Linear acceleration error: ${error.name}`);
+        log(`Linear acceleration error: ${error.name}`);
     });
     linearAccelerationSensor.addEventListener("activate", () => {
-        console.log("Linear acceleration ready to measure");
+        log("Linear acceleration ready to measure");
     });
     linearAccelerationSensor.addEventListener("reading", () => {
-        console.log(`Linear acceleration along the X-axis ${linearAccelerationSensor.x}`);
-        console.log(`Linear acceleration along the Y-axis ${linearAccelerationSensor.y}`);
-        console.log(`Linear acceleration along the Z-axis ${linearAccelerationSensor.z}`);
+        log(`Linear acceleration along the X-axis ${linearAccelerationSensor.x}`);
+        log(`Linear acceleration along the Y-axis ${linearAccelerationSensor.y}`);
+        log(`Linear acceleration along the Z-axis ${linearAccelerationSensor.z}`);
     });
     linearAccelerationSensor.start();
 
-    // todo: find list of valid strings to check in window
-    if ("AmbientLightSensor" in window) {
-        const sensor = new AmbientLightSensor();
-        sensor.addEventListener("error", (event) => {
-            console.log(event.error.name, event.error.message);
-        });
-        sensor.addEventListener("activate", () => {
-            console.log("Ambient light ready to measure");
-        });
-        sensor.addEventListener("reading", (event) => {
-            console.log("Current light level:", sensor.illuminance);
-        });
-        sensor.start();
-    }
+    ambientLightSensor = new AmbientLightSensor();
+    ambientLightSensor.addEventListener("error", (error) => {
+        log(`Ambient light sensor error: ${error.name}`);
+    });
+    ambientLightSensor.addEventListener("activate", () => {
+        log("Ambient light ready to measure");
+    });
+    ambientLightSensor.addEventListener("reading", () => {
+        log(`Current light level: ${ambientLightSensor.illuminance}`);
+    });
+    ambientLightSensor.start();
 }
 
 document.getElementById("startButton").addEventListener(
@@ -87,3 +99,31 @@ document.getElementById("startButton").addEventListener(
     false,
 );
 
+document.getElementById("stopButton").addEventListener(
+    "click",
+    () => {
+        if (accelerometerSensor) {
+            accelerometerSensor.stop();
+            log("Accelerometer stopped");
+        }
+        if (gravitySensor) {
+            gravitySensor.stop();
+            log("Gravity stopped");
+        }
+        if (linearAccelerationSensor) {
+            linearAccelerationSensor.stop();
+            log("Linear acceleration stopped");
+        }
+        if (ambientLightSensor) {
+            ambientLightSensor.stop();
+            log("Ambient light stopped");
+        }
+    },
+    false,
+);
+
+// Check permissions and populate html list
+checkPermission('accelerometer');
+checkPermission('gyroscope');
+checkPermission('magnetometer');
+checkPermission('ambient-light-sensor');
