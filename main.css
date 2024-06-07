@@ -1,24 +1,22 @@
 svg:not(:root) {
-    display: block;
-  }
-  
-  body {
-    font:
-      14px "Open Sans",
-      "Arial",
-      sans-serif;
-    padding: 0;
-    margin: 0;
-  }
+  display: block;
+}
+
+body {
+  font:
+    14px "Open Sans",
+    "Arial",
+    sans-serif;
+  padding: 8px;
+  margin: 8px;
+}
 
 textarea {
-padding: 8px;
+  height: 400px;
+  width: 800px;
+  overflow: scroll;
 }
 
 h3 {
-margin-bottom: 3px;
-}
-
-#log {
-padding-top: 10px;
+  margin-bottom: 3px;
 }
