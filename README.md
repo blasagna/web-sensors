@@ -8,12 +8,25 @@ Adapted from resources:
 
 Serve from localhost within project directory
 
-Option: use VS Code Live Preview extension.
+### local development 
+use VS Code Live Preview extension.
 
-Option: use NodeJS web server.
+### host web app
+Use NodeJS web server with self signed cert.
+NOTE: sensor API feature is only availabel in secture contexts with https.
 
+Setup: create self signed ssl cert
 ```bash
-npx http-server
+npm install -g mkcert
+mkdir -p ~/cert
+cd ~/cert
+mkcert create-ca
+mkcert create-cert
+```
+
+Locally host server.
+```bash
+npx http-server -S -C ~/cert/cert.crt -K ~/cert/cert.key
 ```
 
 [0]: https://developer.mozilla.org/en-US/docs/Web/API/Sensor_APIs
