@@ -8,11 +8,49 @@
 const availableSensorsList = document.getElementById("availableSensors");
 const logElement = document.getElementById("log");
 
+const accelerometerRateCounter = new RateCounter(1.0);
+
 let accelerometerSensor = null;
 let linearAccelerationSensor = null;
 let ambientLightSensor = null;
 let gyroscopeSensor = null;
 let orientationSensor = null;
+
+// Stateful rate counter
+class RateCounter {
+    count = 0;
+    startTime = null;
+    period;
+
+    constructor(period) {
+        this.period = period;
+    }
+
+    /* increment count
+     * return observed rate if elapsed time since last output is greater than configured period
+     * else return null
+     */
+    count(count, timePoint) {
+        this.count += count;
+        if (this.startTime) {
+            const duration = timePoint - this.startTime;
+            if (duration >= this.period) {
+                const latestCount = this.count;
+                this.startTime = timePoint;
+                this.count = 0;
+                return latestCount / duration;
+            }
+        } else {
+            this.startTime = timePoint;
+        }
+        return null;
+    }
+
+    reset() {
+        this.count = 0;
+        this.startTime = null;
+    }
+}
 
 function log(msg) {
     console.log(msg);
@@ -36,6 +74,7 @@ function checkPermission(sensorName) {
 function startSensors() {
     if (window.Accelerometer) {
         try {
+            accelerometerRateCounter.reset();
             accelerometerSensor = new Accelerometer();
             accelerometerSensor.addEventListener("error", (error) => {
                 log(`Accelerometer error: ${error.name}`);
@@ -45,9 +84,14 @@ function startSensors() {
             });
             accelerometerSensor.addEventListener("reading", () => {
                 const t = accelerometerSensor.timestamp;
-                log(`Acceleration along the Y-axis ${accelerometerSensor.y}, time ${t}`);
-                log(`Acceleration along the Z-axis ${accelerometerSensor.z}, time ${t}`);
-                log(`Acceleration along the X-axis ${accelerometerSensor.x}, time ${t}`);
+                const rate = accelerometerRateCounter.count(1, t);
+                // log(`Acceleration along the Y-axis ${accelerometerSensor.y}, time ${t}`);
+                // log(`Acceleration along the Z-axis ${accelerometerSensor.z}, time ${t}`);
+                // log(`Acceleration along the X-axis ${accelerometerSensor.x}, time ${t}`);
+                if (rate) {
+                    // todo: add log of most recent sample data
+                    log(`Accelerometer rate ${rate} Hz`);
+                }
             });
             accelerometerSensor.start();
         } catch (error) {
@@ -74,9 +118,9 @@ function startSensors() {
             });
             linearAccelerationSensor.addEventListener("reading", () => {
                 const t = linearAccelerationSensor.timestamp;
-                log(`Linear acceleration along the X-axis ${linearAccelerationSensor.x}, time ${t}`);
-                log(`Linear acceleration along the Y-axis ${linearAccelerationSensor.y}, time ${t}`);
-                log(`Linear acceleration along the Z-axis ${linearAccelerationSensor.z}, time ${t}`);
+                // log(`Linear acceleration along the X-axis ${linearAccelerationSensor.x}, time ${t}`);
+                // log(`Linear acceleration along the Y-axis ${linearAccelerationSensor.y}, time ${t}`);
+                // log(`Linear acceleration along the Z-axis ${linearAccelerationSensor.z}, time ${t}`);
             });
             linearAccelerationSensor.start();
         } catch (error) {
@@ -130,9 +174,9 @@ function startSensors() {
             });
             gyroscopeSensor.addEventListener("reading", () => {
                 const t = gyroscopeSensor.timestamp;
-                log(`Angular velocity along the X-axis ${gyroscopeSensor.x}, time ${t}`);
-                log(`Angular velocity along the Y-axis ${gyroscopeSensor.y}, time ${t}`);
-                log(`Angular velocity along the Z-axis ${gyroscopeSensor.z}, time ${t}`);
+                // log(`Angular velocity along the X-axis ${gyroscopeSensor.x}, time ${t}`);
+                // log(`Angular velocity along the Y-axis ${gyroscopeSensor.y}, time ${t}`);
+                // log(`Angular velocity along the Z-axis ${gyroscopeSensor.z}, time ${t}`);
             });
             gyroscopeSensor.start();
         } catch (error) {
@@ -160,10 +204,10 @@ function startSensors() {
             orientationSensor.addEventListener("reading", () => {
                 const t = orientationSensor.timestamp;
                 const quaternion = orientationSensor.quaternion; // x, y, z, w array
-                log(`Quaternion X element ${quaternion[0]}, time ${t}`);
-                log(`Quaternion Y element ${quaternion[1]}, time ${t}`);
-                log(`Quaternion Z element ${quaternion[2]}, time ${t}`);
-                log(`Quaternion W element ${quaternion[3]}, time ${t}`);
+                // log(`Quaternion X element ${quaternion[0]}, time ${t}`);
+                // log(`Quaternion Y element ${quaternion[1]}, time ${t}`);
+                // log(`Quaternion Z element ${quaternion[2]}, time ${t}`);
+                // log(`Quaternion W element ${quaternion[3]}, time ${t}`);
 
             });
             orientationSensor.start();
